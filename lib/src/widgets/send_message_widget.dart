@@ -36,7 +36,7 @@ class SendMessageWidget extends StatefulWidget {
     Key? key,
     required this.onSendTap,
     required this.chatController,
-    this.sendMessageConfig,
+    required this.sendMessageConfig,
     this.backgroundColor,
     this.sendMessageBuilder,
     this.onReplyCallback,
@@ -49,7 +49,7 @@ class SendMessageWidget extends StatefulWidget {
   final StringMessageCallBack onSendTap;
 
   /// Provides configuration for text field appearance.
-  final SendMessageConfiguration? sendMessageConfig;
+  final SendMessageConfiguration sendMessageConfig;
 
   /// Allow user to set background colour.
   final Color? backgroundColor;
@@ -146,8 +146,7 @@ class SendMessageWidgetState extends State<SendMessageWidget> {
                                   Container(
                                     decoration: BoxDecoration(
                                       color: widget.sendMessageConfig
-                                              ?.textFieldBackgroundColor ??
-                                          Colors.white,
+                                          .textFieldBackgroundColor,
                                       borderRadius: const BorderRadius.vertical(
                                         top: Radius.circular(14),
                                       ),
@@ -170,9 +169,8 @@ class SendMessageWidgetState extends State<SendMessageWidget> {
                                         horizontal: 6,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: widget.sendMessageConfig
-                                                ?.replyDialogColor ??
-                                            Colors.grey.shade200,
+                                        color: widget
+                                            .sendMessageConfig.replyDialogColor,
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Column(
@@ -192,9 +190,8 @@ class SendMessageWidgetState extends State<SendMessageWidget> {
                                                       TextOverflow.ellipsis,
                                                   style: TextStyle(
                                                     color: widget
-                                                            .sendMessageConfig
-                                                            ?.replyTitleColor ??
-                                                        Colors.deepPurple,
+                                                        .sendMessageConfig
+                                                        .replyTitleColor,
                                                     fontWeight: FontWeight.bold,
                                                     letterSpacing: 0.25,
                                                   ),
@@ -207,9 +204,8 @@ class SendMessageWidgetState extends State<SendMessageWidget> {
                                                 icon: Icon(
                                                   Icons.close,
                                                   color: widget
-                                                          .sendMessageConfig
-                                                          ?.closeIconColor ??
-                                                      Colors.black,
+                                                      .sendMessageConfig
+                                                      .closeIconColor,
                                                   size: 16,
                                                 ),
                                                 onPressed: onCloseTap,

@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 import 'package:chatview/chatview.dart';
+import 'package:chatview/src/models/voice_message_configuration.dart';
 import 'package:chatview/src/widgets/chat_view_inherited_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -223,7 +224,8 @@ class _MessageViewState extends State<MessageView>
                   return VoiceMessageView(
                     screenWidth: MediaQuery.of(context).size.width,
                     message: widget.message,
-                    config: messageConfig?.voiceMessageConfig,
+                    config: messageConfig?.voiceMessageConfig ??
+                        const VoiceMessageConfiguration(),
                     onMaxDuration: widget.onMaxDuration,
                     isMessageBySender: widget.isMessageBySender,
                     messageReactionConfig: messageConfig?.messageReactionConfig,

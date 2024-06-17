@@ -41,9 +41,9 @@ class ChatGroupedListWidget extends StatefulWidget {
     required this.onChatListTap,
     required this.onChatBubbleLongPress,
     required this.isEnableSwipeToSeeTime,
+    required this.profileCircleConfig,
     this.messageConfig,
     this.chatBubbleConfig,
-    this.profileCircleConfig,
     this.swipeToReplyConfig,
     this.repliedMessageConfig,
     this.typeIndicatorConfig,
@@ -67,7 +67,7 @@ class ChatGroupedListWidget extends StatefulWidget {
   final ChatBubbleConfiguration? chatBubbleConfig;
 
   /// Allow user to giving customisation to profile circle
-  final ProfileCircleConfiguration? profileCircleConfig;
+  final ProfileCircleConfiguration profileCircleConfig;
 
   /// Allow user to giving customisation to swipe to reply
   final SwipeToReplyConfiguration? swipeToReplyConfig;
@@ -110,7 +110,7 @@ class _ChatGroupedListWidgetState extends State<ChatGroupedListWidget>
 
   ChatBubbleConfiguration? get chatBubbleConfig => widget.chatBubbleConfig;
 
-  ProfileCircleConfiguration? get profileCircleConfig =>
+  ProfileCircleConfiguration get profileCircleConfig =>
       widget.profileCircleConfig;
   AnimationController? _animationController;
   Animation<Offset>? _slideAnimation;

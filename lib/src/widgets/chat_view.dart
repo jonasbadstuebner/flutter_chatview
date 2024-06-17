@@ -35,7 +35,7 @@ class ChatView extends StatefulWidget {
     Key? key,
     required this.chatController,
     this.onSendTap,
-    this.profileCircleConfig,
+    this.profileCircleConfig = const ProfileCircleConfiguration(),
     this.chatBubbleConfig,
     this.repliedMessageConfig,
     this.swipeToReplyConfig,
@@ -49,7 +49,7 @@ class ChatView extends StatefulWidget {
     ChatBackgroundConfiguration? chatBackgroundConfig,
     this.typeIndicatorConfig,
     this.sendMessageBuilder,
-    this.sendMessageConfig,
+    this.sendMessageConfig = const SendMessageConfiguration(),
     this.onChatListTap,
     required this.chatViewState,
     ChatViewStateConfiguration? chatViewStateConfig,
@@ -64,7 +64,7 @@ class ChatView extends StatefulWidget {
         super(key: key);
 
   /// Provides configuration related to user profile circle avatar.
-  final ProfileCircleConfiguration? profileCircleConfig;
+  final ProfileCircleConfiguration profileCircleConfig;
 
   /// Provides configurations related to chat bubble such as padding, margin, max
   /// width etc.
@@ -115,7 +115,7 @@ class ChatView extends StatefulWidget {
   final ChatController chatController;
 
   /// Provides configuration of default text field in chat.
-  final SendMessageConfiguration? sendMessageConfig;
+  final SendMessageConfiguration sendMessageConfig;
 
   /// Provides current state of chat.
   final ChatViewState chatViewState;

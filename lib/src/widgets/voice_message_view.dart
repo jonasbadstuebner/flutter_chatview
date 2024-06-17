@@ -13,15 +13,15 @@ class VoiceMessageView extends StatefulWidget {
     required this.screenWidth,
     required this.message,
     required this.isMessageBySender,
+    required this.config,
     this.inComingChatBubbleConfig,
     this.outgoingChatBubbleConfig,
     this.onMaxDuration,
     this.messageReactionConfig,
-    this.config,
   }) : super(key: key);
 
   /// Provides configuration related to voice message.
-  final VoiceMessageConfiguration? config;
+  final VoiceMessageConfiguration config;
 
   /// Allow user to set width of chat bubble.
   final double screenWidth;
@@ -55,17 +55,14 @@ class _VoiceMessageViewState extends State<VoiceMessageView> {
 
   PlayerState get playerState => _playerState.value;
 
-  PlayerWaveStyle playerWaveStyle = const PlayerWaveStyle(scaleFactor: 70);
-
   @override
   void initState() {
     super.initState();
     controller = PlayerController()
       ..preparePlayer(
         path: widget.message.message,
-        noOfSamples: widget.config?.playerWaveStyle
-                ?.getSamplesForWidth(widget.screenWidth * 0.5) ??
-            playerWaveStyle.getSamplesForWidth(widget.screenWidth * 0.5),
+        noOfSamples: widget.config.playerWaveStyle
+            .getSamplesForWidth(widget.screenWidth * 0.5),
       ).whenComplete(() => widget.onMaxDuration?.call(controller.maxDuration));
     playerStateSubscription = controller.onPlayerStateChanged
         .listen((state) => _playerState.value = state);
@@ -85,16 +82,15 @@ class _VoiceMessageViewState extends State<VoiceMessageView> {
       clipBehavior: Clip.none,
       children: [
         Container(
-          decoration: widget.config?.decoration ??
+          decoration: widget.config.decoration ??
               BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 color: widget.isMessageBySender
                     ? widget.outgoingChatBubbleConfig?.color
                     : widget.inComingChatBubbleConfig?.color,
               ),
-          padding: widget.config?.padding ??
-              const EdgeInsets.symmetric(horizontal: 8),
-          margin: widget.config?.margin ??
+          padding: widget.config.padding,
+          margin: widget.config.margin ??
               EdgeInsets.symmetric(
                 horizontal: 8,
                 vertical: widget.message.reaction.reactions.isNotEmpty ? 15 : 0,
@@ -108,12 +104,12 @@ class _VoiceMessageViewState extends State<VoiceMessageView> {
                     onPressed: _playOrPause,
                     icon:
                         state.isStopped || state.isPaused || state.isInitialised
-                            ? widget.config?.playIcon ??
+                            ? widget.config.playIcon ??
                                 const Icon(
                                   Icons.play_arrow,
                                   color: Colors.white,
                                 )
-                            : widget.config?.pauseIcon ??
+                            : widget.config.pauseIcon ??
                                 const Icon(
                                   Icons.stop,
                                   color: Colors.white,
@@ -126,15 +122,12 @@ class _VoiceMessageViewState extends State<VoiceMessageView> {
                 size: Size(widget.screenWidth * 0.50, 60),
                 playerController: controller,
                 waveformType: WaveformType.fitWidth,
-                playerWaveStyle:
-                    widget.config?.playerWaveStyle ?? playerWaveStyle,
-                padding: widget.config?.waveformPadding ??
-                    const EdgeInsets.only(right: 10),
-                margin: widget.config?.waveformMargin,
-                animationCurve: widget.config?.animationCurve ?? Curves.easeIn,
-                animationDuration: widget.config?.animationDuration ??
-                    const Duration(milliseconds: 500),
-                enableSeekGesture: widget.config?.enableSeekGesture ?? true,
+                playerWaveStyle: widget.config.playerWaveStyle,
+                padding: widget.config.waveformPadding,
+                margin: widget.config.waveformMargin,
+                animationCurve: widget.config.animationCurve,
+                animationDuration: widget.config.animationDuration,
+                enableSeekGesture: widget.config.enableSeekGesture,
               ),
             ],
           ),
