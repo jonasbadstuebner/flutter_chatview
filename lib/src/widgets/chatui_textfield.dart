@@ -35,7 +35,7 @@ import '../utils/package_strings.dart';
 class ChatUITextField extends StatefulWidget {
   const ChatUITextField({
     Key? key,
-    this.sendMessageConfig,
+    required this.sendMessageConfig,
     required this.focusNode,
     required this.textEditingController,
     required this.onPressed,
@@ -44,7 +44,7 @@ class ChatUITextField extends StatefulWidget {
   }) : super(key: key);
 
   /// Provides configuration of default text field in chat.
-  final SendMessageConfiguration? sendMessageConfig;
+  final SendMessageConfiguration sendMessageConfig;
 
   /// Provides focusNode for focusing text field.
   final FocusNode focusNode;
@@ -74,23 +74,23 @@ class _ChatUITextFieldState extends State<ChatUITextField> {
 
   ValueNotifier<bool> isRecording = ValueNotifier(false);
 
-  SendMessageConfiguration? get sendMessageConfig => widget.sendMessageConfig;
+  SendMessageConfiguration get sendMessageConfig => widget.sendMessageConfig;
 
   VoiceRecordingConfiguration? get voiceRecordingConfig =>
-      widget.sendMessageConfig?.voiceRecordingConfiguration;
+      widget.sendMessageConfig.voiceRecordingConfiguration;
 
   ImagePickerIconsConfiguration? get imagePickerIconsConfig =>
-      sendMessageConfig?.imagePickerIconsConfig;
+      sendMessageConfig.imagePickerIconsConfig;
 
-  TextFieldConfiguration? get textFieldConfig =>
-      sendMessageConfig?.textFieldConfig;
+  TextFieldConfiguration get textFieldConfig =>
+      sendMessageConfig.textFieldConfig;
 
   CancelRecordConfiguration? get cancelRecordConfiguration =>
-      sendMessageConfig?.cancelRecordConfiguration;
+      sendMessageConfig.cancelRecordConfiguration;
 
-  OutlineInputBorder get _outLineBorder => OutlineInputBorder(
+  OutlineInputBorder get _outlineBorder => OutlineInputBorder(
         borderSide: const BorderSide(color: Colors.transparent),
-        borderRadius: widget.sendMessageConfig?.textFieldConfig?.borderRadius ??
+        borderRadius: widget.sendMessageConfig.textFieldConfig.borderRadius ??
             BorderRadius.circular(textFieldBorderRadius),
       );
 
@@ -102,9 +102,8 @@ class _ChatUITextFieldState extends State<ChatUITextField> {
   @override
   void initState() {
     attachListeners();
-    debouncer = Debouncer(
-        sendMessageConfig?.textFieldConfig?.compositionThresholdTime ??
-            const Duration(seconds: 1));
+    debouncer =
+        Debouncer(sendMessageConfig.textFieldConfig.compositionThresholdTime);
     super.initState();
 
     if (defaultTargetPlatform == TargetPlatform.iOS ||
@@ -124,22 +123,22 @@ class _ChatUITextFieldState extends State<ChatUITextField> {
 
   void attachListeners() {
     composingStatus.addListener(() {
-      widget.sendMessageConfig?.textFieldConfig?.onMessageTyping
+      widget.sendMessageConfig.textFieldConfig.onMessageTyping
           ?.call(composingStatus.value);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final outlineBorder = _outLineBorder;
+    final outlineBorder = _outlineBorder;
     return Container(
       padding:
-          textFieldConfig?.padding ?? const EdgeInsets.symmetric(horizontal: 6),
-      margin: textFieldConfig?.margin,
+          textFieldConfig.padding ?? const EdgeInsets.symmetric(horizontal: 6),
+      margin: textFieldConfig.margin,
       decoration: BoxDecoration(
-        borderRadius: textFieldConfig?.borderRadius ??
+        borderRadius: textFieldConfig.borderRadius ??
             BorderRadius.circular(textFieldBorderRadius),
-        color: sendMessageConfig?.textFieldBackgroundColor ?? Colors.white,
+        color: sendMessageConfig.textFieldBackgroundColor,
       ),
       child: ValueListenableBuilder<bool>(
         valueListenable: isRecording,
@@ -176,30 +175,29 @@ class _ChatUITextFieldState extends State<ChatUITextField> {
                   child: TextField(
                     focusNode: widget.focusNode,
                     controller: widget.textEditingController,
-                    style: textFieldConfig?.textStyle ??
+                    style: textFieldConfig.textStyle ??
                         const TextStyle(color: Colors.white),
-                    maxLines: textFieldConfig?.maxLines ?? 5,
-                    minLines: textFieldConfig?.minLines ?? 1,
-                    keyboardType: textFieldConfig?.textInputType,
-                    inputFormatters: textFieldConfig?.inputFormatters,
+                    maxLines: textFieldConfig.maxLines ?? 5,
+                    minLines: textFieldConfig.minLines ?? 1,
+                    keyboardType: textFieldConfig.textInputType,
+                    inputFormatters: textFieldConfig.inputFormatters,
                     onChanged: _onChanged,
-                    enabled: textFieldConfig?.enabled,
-                    textCapitalization: textFieldConfig?.textCapitalization ??
+                    enabled: textFieldConfig.enabled,
+                    textCapitalization: textFieldConfig.textCapitalization ??
                         TextCapitalization.sentences,
                     decoration: InputDecoration(
                       hintText:
-                          textFieldConfig?.hintText ?? PackageStrings.message,
-                      fillColor: sendMessageConfig?.textFieldBackgroundColor ??
-                          Colors.white,
+                          textFieldConfig.hintText ?? PackageStrings.message,
+                      fillColor: sendMessageConfig.textFieldBackgroundColor,
                       filled: true,
-                      hintStyle: textFieldConfig?.hintStyle ??
+                      hintStyle: textFieldConfig.hintStyle ??
                           TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w400,
                             color: Colors.grey.shade600,
                             letterSpacing: 0.25,
                           ),
-                      contentPadding: textFieldConfig?.contentPadding ??
+                      contentPadding: textFieldConfig.contentPadding ??
                           const EdgeInsets.symmetric(horizontal: 6),
                       border: outlineBorder,
                       focusedBorder: outlineBorder,
@@ -213,30 +211,29 @@ class _ChatUITextFieldState extends State<ChatUITextField> {
                 builder: (_, inputTextValue, child) {
                   if (inputTextValue.isNotEmpty) {
                     return IconButton(
-                      color: sendMessageConfig?.defaultSendButtonColor ??
+                      color: sendMessageConfig.defaultSendButtonColor ??
                           Colors.green,
-                      onPressed: (textFieldConfig?.enabled ?? true)
+                      onPressed: (textFieldConfig.enabled)
                           ? () {
                               widget.onPressed();
                               _inputText.value = '';
                             }
                           : null,
-                      icon: sendMessageConfig?.sendButtonIcon ??
+                      icon: sendMessageConfig.sendButtonIcon ??
                           const Icon(Icons.send),
                     );
                   } else {
                     return Row(
                       children: [
                         if (!isRecordingValue) ...[
-                          if (sendMessageConfig?.enableCameraImagePicker ??
-                              true)
+                          if (sendMessageConfig.enableCameraImagePicker)
                             IconButton(
                               constraints: const BoxConstraints(),
-                              onPressed: (textFieldConfig?.enabled ?? true)
+                              onPressed: (textFieldConfig.enabled)
                                   ? () => _onIconPressed(
                                         ImageSource.camera,
                                         config: sendMessageConfig
-                                            ?.imagePickerConfiguration,
+                                            .imagePickerConfiguration,
                                       )
                                   : null,
                               icon: imagePickerIconsConfig
@@ -247,15 +244,14 @@ class _ChatUITextFieldState extends State<ChatUITextField> {
                                         imagePickerIconsConfig?.cameraIconColor,
                                   ),
                             ),
-                          if (sendMessageConfig?.enableGalleryImagePicker ??
-                              true)
+                          if (sendMessageConfig.enableGalleryImagePicker)
                             IconButton(
                               constraints: const BoxConstraints(),
-                              onPressed: (textFieldConfig?.enabled ?? true)
+                              onPressed: (textFieldConfig.enabled)
                                   ? () => _onIconPressed(
                                         ImageSource.gallery,
                                         config: sendMessageConfig
-                                            ?.imagePickerConfiguration,
+                                            .imagePickerConfiguration,
                                       )
                                   : null,
                               icon: imagePickerIconsConfig
@@ -267,11 +263,11 @@ class _ChatUITextFieldState extends State<ChatUITextField> {
                                   ),
                             ),
                         ],
-                        if ((sendMessageConfig?.allowRecordingVoice ?? false) &&
+                        if ((sendMessageConfig.allowRecordingVoice) &&
                             !kIsWeb &&
                             (Platform.isIOS || Platform.isAndroid))
                           IconButton(
-                            onPressed: (textFieldConfig?.enabled ?? true)
+                            onPressed: (textFieldConfig.enabled)
                                 ? _recordOrStop
                                 : null,
                             icon: (isRecordingValue

@@ -22,6 +22,7 @@
 import 'package:chatview/src/extensions/extensions.dart';
 import 'package:chatview/src/utils/constants/constants.dart';
 import 'package:chatview/src/widgets/chat_view_inherited_widget.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../chatview.dart';
@@ -182,6 +183,14 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
               circleRadius: profileCircleConfig?.circleRadius,
               onTap: () => _onAvatarTap(messagedUser),
               onLongPress: () => _onAvatarLongPress(messagedUser),
+            )
+          else
+            SizedBox(
+              width: profileCircleConfig == null
+                  ? 10
+                  : (profileCircleConfig!.circleRadius * 2 +
+                      (profileCircleConfig?.padding?.collapsedSize.width ??
+                          12)),
             ),
           Expanded(
             child: isMessageBySender
