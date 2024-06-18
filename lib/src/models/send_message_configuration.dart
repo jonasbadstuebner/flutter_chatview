@@ -169,6 +169,9 @@ class TextFieldConfiguration {
   /// Used to give text style of actual text in text field.
   final TextStyle? textStyle;
 
+  /// Used to give a border to the text field.
+  final BoxBorder? border;
+
   /// Used to give border radius in text field.
   final BorderRadius? borderRadius;
 
@@ -200,6 +203,7 @@ class TextFieldConfiguration {
   const TextFieldConfiguration({
     this.contentPadding,
     this.maxLines,
+    this.border,
     this.borderRadius,
     this.hintText,
     this.hintStyle,
