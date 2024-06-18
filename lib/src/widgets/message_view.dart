@@ -167,6 +167,9 @@ class _MessageViewState extends State<MessageView>
         children: [
           (() {
                 if (message.isAllEmoji) {
+                  if (messageConfig?.emojiMessageBuilder != null) {
+                    return messageConfig!.emojiMessageBuilder!(widget);
+                  }
                   return Stack(
                     clipBehavior: Clip.none,
                     children: [
@@ -201,6 +204,9 @@ class _MessageViewState extends State<MessageView>
                     ],
                   );
                 } else if (widget.message.messageType.isImage) {
+                  if (messageConfig?.imageMessageBuilder != null) {
+                    return messageConfig!.imageMessageBuilder!(widget);
+                  }
                   return ImageMessageView(
                     message: widget.message,
                     isMessageBySender: widget.isMessageBySender,
@@ -210,6 +216,9 @@ class _MessageViewState extends State<MessageView>
                     highlightScale: widget.highlightScale,
                   );
                 } else if (widget.message.messageType.isText) {
+                  if (messageConfig?.textMessageBuilder != null) {
+                    return messageConfig!.textMessageBuilder!(widget);
+                  }
                   return TextMessageView(
                     inComingChatBubbleConfig: widget.inComingChatBubbleConfig,
                     outgoingChatBubbleConfig: widget.outgoingChatBubbleConfig,
@@ -221,6 +230,9 @@ class _MessageViewState extends State<MessageView>
                     highlightMessage: widget.shouldHighlight,
                   );
                 } else if (widget.message.messageType.isVoice) {
+                  if (messageConfig?.voiceMessageBuilder != null) {
+                    return messageConfig!.voiceMessageBuilder!(widget);
+                  }
                   return VoiceMessageView(
                     screenWidth: MediaQuery.of(context).size.width,
                     message: widget.message,
@@ -234,7 +246,7 @@ class _MessageViewState extends State<MessageView>
                   );
                 } else if (widget.message.messageType.isCustom &&
                     messageConfig?.customMessageBuilder != null) {
-                  return messageConfig?.customMessageBuilder!(widget.message);
+                  return messageConfig?.customMessageBuilder!(widget);
                 }
               }()) ??
               const SizedBox(),
