@@ -92,15 +92,7 @@ class SendMessageWidgetState extends State<SendMessageWidget> {
       ? PackageStrings.you
       : repliedUser?.name ?? '';
 
-  ChatUser? currentUser;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (provide != null) {
-      currentUser = provide!.chatController.currentUser;
-    }
-  }
+  ChatUser? get currentUser => widget.chatController.currentUser;
 
   @override
   Widget build(BuildContext context) {
