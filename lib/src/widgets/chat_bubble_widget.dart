@@ -39,6 +39,8 @@ class ChatBubbleWidget extends StatefulWidget {
     required this.onLongPress,
     required this.slideValueListener,
     required this.onInitReplyToMessage,
+    this.previousMessage,
+    this.nextMessage,
     this.profileCircleConfig,
     this.chatBubbleConfig,
     this.repliedMessageConfig,
@@ -52,6 +54,12 @@ class ChatBubbleWidget extends StatefulWidget {
 
   /// Represent current instance of message.
   final Message message;
+
+  /// Represent message sent before that one.
+  final Message? previousMessage;
+
+  /// Represent message sent after that one.
+  final Message? nextMessage;
 
   /// Give callback once user long press on chat bubble.
   final DoubleCallBack onLongPress;
@@ -101,6 +109,12 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
   String get replyMessage => widget.message.replyMessage.message;
 
   bool get isMessageBySender => widget.message.sentBy == currentUser?.id;
+
+  bool get isMessageBySameSenderAsPrevious =>
+      widget.previousMessage?.sentBy == widget.message.sentBy;
+
+  bool get isMessageLastFromSender =>
+      widget.nextMessage?.sentBy == widget.message.sentBy;
 
   bool get isLastMessage =>
       chatController?.initialMessageList.last.id == widget.message.id;
@@ -176,7 +190,7 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
             isMessageBySender ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          if (!isMessageBySender &&
+          if (!(isMessageBySender || isMessageLastFromSender) &&
               (featureActiveConfig?.enableOtherUserProfileAvatar ?? true))
             ProfileCircle(
               bottomPadding: widget.message.reaction.reactions.isNotEmpty
@@ -309,7 +323,8 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
       crossAxisAlignment:
           isMessageBySender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
-        if ((chatController?.otherUsers.isNotEmpty ?? false) &&
+        if (!isMessageBySameSenderAsPrevious &&
+            (chatController?.otherUsers.isNotEmpty ?? false) &&
             !isMessageBySender &&
             (featureActiveConfig?.enableOtherUserName ?? true))
           Padding(
