@@ -37,8 +37,8 @@ class ChatBubbleWidget extends StatefulWidget {
     required GlobalKey key,
     required this.message,
     required this.onLongPress,
-    required this.slideAnimation,
-    required this.onSwipe,
+    required this.slideValueListener,
+    required this.onInitReplyToMessage,
     this.profileCircleConfig,
     this.chatBubbleConfig,
     this.repliedMessageConfig,
@@ -78,14 +78,14 @@ class ChatBubbleWidget extends StatefulWidget {
   /// whole chat.
   final Color? messageTimeIconColor;
 
-  /// Provides slide animation when user swipe whole chat.
-  final Animation<Offset>? slideAnimation;
+  /// Provides slide value when user swipe whole chat.
+  final ValueListenable<double>? slideValueListener;
 
   /// Provides configuration of all types of messages.
   final MessageConfiguration? messageConfig;
 
   /// Provides callback of when user swipe chat bubble for reply.
-  final MessageCallBack onSwipe;
+  final MessageCallBack onInitReplyToMessage;
 
   /// Provides callback when user tap on replied message upon chat bubble.
   final Function(String)? onReplyTap;
@@ -104,6 +104,12 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
 
   bool get isLastMessage =>
       chatController?.initialMessageList.last.id == widget.message.id;
+
+  bool get swipeLeftShouldShowTime =>
+      featureActiveConfig?.enableSwipeToSeeTime ?? true;
+
+  bool get enableSwipeToReply =>
+      featureActiveConfig?.enableSwipeToReply ?? true;
 
   ProfileCircleConfiguration? get profileCircleConfig =>
       widget.profileCircleConfig;
@@ -126,31 +132,36 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
   Widget build(BuildContext context) {
     // Get user from id.
     final messagedUser = chatController?.getUserFromId(widget.message.sentBy);
-    return Stack(
-      children: [
-        if (featureActiveConfig?.enableSwipeToSeeTime ?? true) ...[
-          Visibility(
-            visible: widget.slideAnimation?.value.dx == 0.0 ? false : true,
-            child: Positioned.fill(
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: MessageTimeWidget(
-                  messageTime: widget.message.createdAt,
-                  isCurrentUser: isMessageBySender,
-                  messageTimeIconColor: widget.messageTimeIconColor,
-                  messageTimeTextStyle: widget.messageTimeTextStyle,
+    if (swipeLeftShouldShowTime && widget.slideValueListener != null) {
+      return ValueListenableBuilder<double>(
+        valueListenable: widget.slideValueListener!,
+        builder: (context, slideValue, child) => Stack(
+          children: [
+            Visibility(
+              visible: widget.slideValueListener!.value == 0.0 ? false : true,
+              child: Positioned.fill(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: MessageTimeWidget(
+                    messageTime: widget.message.createdAt,
+                    isCurrentUser: isMessageBySender,
+                    messageTimeIconColor: widget.messageTimeIconColor,
+                    messageTimeTextStyle: widget.messageTimeTextStyle,
+                  ),
                 ),
               ),
             ),
-          ),
-          SlideTransition(
-            position: widget.slideAnimation!,
-            child: _chatBubbleWidget(messagedUser),
-          ),
-        ] else
-          _chatBubbleWidget(messagedUser),
-      ],
-    );
+            Transform.translate(
+              offset: Offset(widget.slideValueListener!.value * 50, 0),
+              child: child!,
+            ),
+          ],
+        ),
+        child: _chatBubbleWidget(messagedUser),
+      );
+    }
+
+    return _chatBubbleWidget(messagedUser);
   }
 
   Widget _chatBubbleWidget(ChatUser? messagedUser) {
@@ -193,50 +204,17 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
                           12)),
             ),
           Expanded(
-            child: isMessageBySender
-                ? SwipeToReply(
-                    onLeftSwipe: featureActiveConfig?.enableSwipeToReply ?? true
-                        ? () {
-                            if (maxDuration != null) {
-                              widget.message.voiceMessageDuration =
-                                  Duration(milliseconds: maxDuration!);
-                            }
-                            if (widget.swipeToReplyConfig?.onLeftSwipe !=
-                                null) {
-                              widget.swipeToReplyConfig?.onLeftSwipe!(
-                                  widget.message.message,
-                                  widget.message.sentBy);
-                            }
-                            widget.onSwipe(widget.message);
-                          }
-                        : null,
-                    replyIconColor: widget.swipeToReplyConfig?.replyIconColor,
-                    swipeToReplyAnimationDuration:
-                        widget.swipeToReplyConfig?.animationDuration,
-                    child: _messagesWidgetColumn(messagedUser),
-                  )
-                : SwipeToReply(
-                    onRightSwipe:
-                        featureActiveConfig?.enableSwipeToReply ?? true
-                            ? () {
-                                if (maxDuration != null) {
-                                  widget.message.voiceMessageDuration =
-                                      Duration(milliseconds: maxDuration!);
-                                }
-                                if (widget.swipeToReplyConfig?.onRightSwipe !=
-                                    null) {
-                                  widget.swipeToReplyConfig?.onRightSwipe!(
-                                      widget.message.message,
-                                      widget.message.sentBy);
-                                }
-                                widget.onSwipe(widget.message);
-                              }
-                            : null,
-                    replyIconColor: widget.swipeToReplyConfig?.replyIconColor,
-                    swipeToReplyAnimationDuration:
-                        widget.swipeToReplyConfig?.animationDuration,
-                    child: _messagesWidgetColumn(messagedUser),
-                  ),
+            child: SwipeToReply(
+              isMessageBySender: isMessageBySender,
+              onSwipeInwards: (enableSwipeToReply && !swipeLeftShouldShowTime)
+                  ? _initReplyToMessage
+                  : null,
+              onSwipeRight: (enableSwipeToReply && swipeLeftShouldShowTime)
+                  ? _initReplyToMessage
+                  : null,
+              replyIconColor: widget.swipeToReplyConfig?.replyIconColor,
+              child: _messagesWidgetColumn(messagedUser),
+            ),
           ),
           if (isMessageBySender) ...[getReciept()],
           if (isMessageBySender &&
@@ -266,6 +244,23 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
   void _onAvatarTap(ChatUser? user) {
     if (profileCircleConfig?.onAvatarTap != null && user != null) {
       profileCircleConfig?.onAvatarTap!(user);
+    }
+  }
+
+  void _onAvatarLongPress(ChatUser? user) {
+    if (profileCircleConfig?.onAvatarLongPress != null && user != null) {
+      profileCircleConfig?.onAvatarLongPress!(user);
+    }
+  }
+
+  void _initReplyToMessage() {
+    if (maxDuration != null) {
+      widget.message.voiceMessageDuration =
+          Duration(milliseconds: maxDuration!);
+    }
+    if (widget.swipeToReplyConfig?.onInitReply == null ||
+        (widget.swipeToReplyConfig?.onInitReply!(widget.message) ?? true)) {
+      widget.onInitReplyToMessage(widget.message);
     }
   }
 
@@ -307,12 +302,6 @@ class _ChatBubbleWidgetState extends State<ChatBubbleWidget> {
           });
     }
     return const SizedBox();
-  }
-
-  void _onAvatarLongPress(ChatUser? user) {
-    if (profileCircleConfig?.onAvatarLongPress != null && user != null) {
-      profileCircleConfig?.onAvatarLongPress!(user);
-    }
   }
 
   Widget _messagesWidgetColumn(ChatUser? messagedUser) {
